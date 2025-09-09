@@ -15,7 +15,7 @@ project:
 
   # List each Verilog source file inside src/
   source_files:
-    - "axi4lite_top.v"
+    - "project.v"
     - "axi4lite_master.v"
     - "axi4lite_slave.v"
 
