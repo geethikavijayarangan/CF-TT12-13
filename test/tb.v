@@ -93,6 +93,6 @@ module tb;
         else
             $display("TEST FAILED (Expected 0x04, Got 0x%h)", uio_out);
 
-        #100 $finish;
+        #100 $stop;
     end
 endmodule
