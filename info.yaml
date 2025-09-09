@@ -15,9 +15,9 @@ project:
 
   # List each Verilog source file inside src/
   source_files:
-    - "src/axi4lite_top.v"
-    - "src/axi4lite_master.v"
-    - "src/axi4lite_slave.v"
+    - "axi4lite_top.v"
+    - "axi4lite_master.v"
+    - "axi4lite_slave.v"
 
 # Pinout – leave blank unless you want meaningful names in datasheet
 pinout:
