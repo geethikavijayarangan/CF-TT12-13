@@ -41,6 +41,7 @@ module tb;
     wire [7:0] uo_out;
 
     // DUT
+`ifndef GL_TEST
     tt_um_axi4lite_top #(
         .ADDR_WIDTH(ADDR_WIDTH),
         .DATA_WIDTH(DATA_WIDTH)
@@ -54,6 +55,18 @@ module tb;
         .uio_out(uio_out),
         .uo_out (uo_out)
     );
+`else
+    tt_um_axi4lite_top dut (
+        .clk    (clk),
+        .rst_n  (rst_n),
+        .ena    (ena),
+        .ui_in  (ui_in),
+        .uio_in (uio_in),
+        .uio_oe (uio_oe),
+        .uio_out(uio_out),
+        .uo_out (uo_out)
+    );
+`endif
 
     // Clock
     initial begin
