@@ -1,20 +1,33 @@
-<!---
 
-This file is used to generate your project datasheet. Please fill in the information below and delete any unused
-sections.
+# AXI4-Lite Top Project
 
-You can also include images in this folder and reference them in the markdown. Each image must be less than
-512 kb in size, and the combined size of all images must be less than 1 MB.
--->
+## Overview
+This project implements a **top-level AXI4-Lite system** with a master and a slave.  
+It provides a **simple interface** for performing memory-mapped read and write operations without directly controlling AXI signals.
 
-## How it works
+---
 
-Explain how your project works
+## How It Works
+- The **top module** instantiates:
+  - An **AXI4-Lite Master**  
+  - An **AXI4-Lite Slave**  
+- User interface signals:
+  - `ui_in[0]` → Start Write  
+  - `ui_in[2:1]` → Write Address  
+  - `uio_in` → Write Data  
+  - `ui_in[4]` → Start Read  
+  - `ui_in[3:2]` → Read Address  
+- Operation:
+  - Master drives AXI4-Lite signals automatically.  
+  - Slave responds according to protocol.  
+  - `uo_out[0]` signals transaction completion.  
+  - Read data appears on `uio_out`.
 
-## How to test
+---
 
-Explain how to use your project
-
-## External hardware
-
-List external hardware used in your project (e.g. PMOD, LED display, etc), if any
+## How to Test
+- Use the provided **Verilog testbench** (`tb.v`) to run a reset → write → read → check sequence.  
+- Run with Icarus Verilog:
+```bash
+iverilog -o sim.vvp tt_um_axi4lite_top.v axi4lite_master.v axi4lite_slave.v tb.v
+vvp sim.vvp
