@@ -43,7 +43,7 @@ module tb;
     // DUT
     tt_um_axi4lite_top #(
         .ADDR_WIDTH(ADDR_WIDTH),
-    .DATA_WIDTH(DATA_WIDTH)
+        .DATA_WIDTH(DATA_WIDTH)
     ) dut (
         .clk    (clk),
         .rst_n  (rst_n),
