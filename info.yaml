@@ -3,6 +3,7 @@
 project:
   title:        "AXI4-Lite Master-Slave"     # Project title
   author:       "CF-TT12-13"      # Your name
+  description:  "An AXI4-Lite Master-Slave implementation for TinyTapeout."      # One line description of what your project does
   language:     "Verilog" # other examples include SystemVerilog, Amaranth, VHDL, etc
   clock_hz:     50000000      # Clock frequency in Hz (or 0 if not applicable)
 
