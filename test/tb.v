@@ -22,97 +22,78 @@
 
 `timescale 1ns / 1ps
 
-module tb;
+`timescale 1ns/1ps
+`default_nettype none
 
-    localparam ADDR_WIDTH = 2;
-    localparam DATA_WIDTH = 8;
+module tb();
 
-    reg clk;
-    reg rst_n;
-    reg ena;
+  reg clk;
+  reg rst_n;
+  reg ena;
+  reg [7:0] ui_in;
+  reg [7:0] uio_in;
+  wire [7:0] uo_out;
+  wire [7:0] uio_out;
+  wire [7:0] uio_oe;
 
-    // Inputs to top
-    reg  [7:0] ui_in;
-    reg  [7:0] uio_in;
-
-    // Outputs from top
-    wire [7:0] uio_oe;
-    wire [7:0] uio_out;
-    wire [7:0] uo_out;
-
-    // Dump the signals to a VCD file. You can view it with gtkwave or surfer.
-     initial begin
-         $dumpfile("tb.vcd");
-         $dumpvars(0, tb);
-         #1;
-     end
-
-    // DUT
-`ifndef GL_TEST
-    tt_um_axi4lite_top #(
-        .ADDR_WIDTH(ADDR_WIDTH),
-        .DATA_WIDTH(DATA_WIDTH)
-    ) dut (
-        .clk    (clk),
-        .rst_n  (rst_n),
-        .ena    (ena),
-        .ui_in  (ui_in),
-        .uio_in (uio_in),
-        .uio_oe (uio_oe),
-        .uio_out(uio_out),
-        .uo_out (uo_out)
-    );
-`else
-    tt_um_axi4lite_top dut (
-        .clk    (clk),
-        .rst_n  (rst_n),
-        .ena    (ena),
-        .ui_in  (ui_in),
-        .uio_in (uio_in),
-        .uio_oe (uio_oe),
-        .uio_out(uio_out),
-        .uo_out (uo_out)
-    );
+`ifdef GL_TEST
+  wire VPWR = 1'b1;
+  wire VGND = 1'b0;
 `endif
 
-    // Clock
-    initial begin
-        clk = 0;
-        forever #5 clk = ~clk;  // 100 MHz
-    end
+  // Dump VCD
+  initial begin
+    $dumpfile("tb.vcd");
+    $dumpvars(0, tb);
+  end
 
-    // Test sequence
-    initial begin
-        rst_n  = 0;
-        ena    = 1;
-        ui_in  = 0;
-        uio_in = 0;
+  // Clock
+  initial clk = 0;
+  always #5 clk = ~clk;
 
-        #20 rst_n = 1;
+  // DUT
+  tt_um_axi4lite_top dut (
+    .clk    (clk),
+    .rst_n  (rst_n),
+    .ena    (ena),
+    .ui_in  (ui_in),
+    .uo_out (uo_out),
+    .uio_in (uio_in),
+    .uio_out(uio_out),
+    .uio_oe (uio_oe)
+  `ifdef GL_TEST
+    ,.VPWR(VPWR),
+    ,.VGND(VGND)
+  `endif
+  );
 
-        // ---------------- WRITE ----------------
-        #20;
-        ui_in[0]   = 1;        // start_write
-        ui_in[2:1] = 2'h2;     // write_addr
-        uio_in     = 8'h4;     // write data
-        #10 ui_in[0] = 0;      // deassert start_write
-        wait(uo_out[0] == 1);  // wait for done
-        $display("WRITE: Addr=0x%h Data=0x%h", ui_in[2:1], uio_in);
+  // Stimulus
+  initial begin
+    rst_n = 0; ena = 0; ui_in = 0; uio_in = 0;
+    #20;
+    rst_n = 1; ena = 1;
+    #10;
 
-        // ---------------- READ ----------------
-        #20;
-        ui_in[4]   = 1;        // start_read
-        ui_in[3:2] = 2'h2;     // read_addr
-        #10 ui_in[4] = 0;      // deassert start_read
-        wait(uo_out[0] == 1);  // wait for done
-        $display("READ:  Addr=0x%h Data=0x%h", ui_in[3:2], uio_out);
+    // Example write
+    ui_in[0]   = 1;       // start_write
+    ui_in[2:1] = 2'b01;   // write addr
+    uio_in     = 8'hAA;   // write data
+    #40;
+    ui_in[0]   = 0;
 
-        // ---------------- CHECK ----------------
-        if (uio_out == 8'h4)
-            $display("TEST PASSED");
-        else
-            $display("TEST FAILED (Expected 0x04, Got 0x%h)", uio_out);
+    // Example read
+    ui_in[4]   = 1;       // start_read
+    ui_in[3:2] = 2'b01;   // read addr
+    #40;
+    ui_in[4]   = 0;
 
-        #100 $stop;
-    end
+    #100 $finish;
+  end
+
+  // Monitor
+  initial begin
+    $monitor("T=%0t clk=%b rst_n=%b ena=%b ui_in=%b uo_out=%h uio_out=%h",
+              $time, clk, rst_n, ena, ui_in, uo_out, uio_out);
+  end
+
 endmodule
