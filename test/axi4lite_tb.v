@@ -22,7 +22,7 @@
 
 `timescale 1ns / 1ps
 
-module tb;
+module axi4lite_tb;
 
     localparam ADDR_WIDTH = 2;
     localparam DATA_WIDTH = 8;
