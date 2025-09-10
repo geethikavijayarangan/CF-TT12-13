@@ -15,6 +15,20 @@ module tb;
     wire [7:0] uio_out;
     wire [7:0] uo_out;
 
+`ifdef GL_TEST
+    // Gate-level netlist: parameters are already fixed
+    tt_um_axi4lite_top dut (
+        .clk    (clk),
+        .rst_n  (rst_n),
+        .ena    (ena),
+        .ui_in  (ui_in),
+        .uio_in (uio_in),
+        .uio_oe (uio_oe),
+        .uio_out(uio_out),
+        .uo_out (uo_out)
+    );
+`else
+    // RTL simulation: override parameters
     tt_um_axi4lite_top #(
         .ADDR_WIDTH(ADDR_WIDTH),
         .DATA_WIDTH(DATA_WIDTH)
@@ -28,6 +42,7 @@ module tb;
         .uio_out(uio_out),
         .uo_out (uo_out)
     );
+`endif
 
     // Clock generation
     initial begin
@@ -66,7 +81,7 @@ module tb;
         else
             $display("TEST FAILED ❌ (Expected 0x04, Got 0x%h)", uio_out);
 
-        #100 $finish;
+        #100 $stop;
     end
 
 endmodule
