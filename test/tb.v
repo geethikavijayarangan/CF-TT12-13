@@ -40,6 +40,13 @@ module tb;
     wire [7:0] uio_out;
     wire [7:0] uo_out;
 
+    // Dump the signals to a VCD file. You can view it with gtkwave or surfer.
+     initial begin
+         $dumpfile("tb.vcd");
+         $dumpvars(0, tb);
+         #1;
+     end
+
     // DUT
 `ifndef GL_TEST
     tt_um_axi4lite_top #(
