@@ -1,96 +1,49 @@
 `default_nettype none
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 06.09.2025 15:03:13
-// Design Name: 
-// Module Name: axi4lite_tb
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
 
-module tt_um_axi4lite_tb;
+/* This testbench just instantiates the module and makes some convenient wires
+   that can be driven / tested by the cocotb test.py.
+*/
+module tb ();
 
-    localparam ADDR_WIDTH = 2;
-    localparam DATA_WIDTH = 8;
+  // Dump the signals to a VCD file. You can view it with gtkwave or surfer.
+  initial begin
+    $dumpfile("tb.vcd");
+    $dumpvars(0, tb);
+    #1;
+  end
 
-    reg clk;
-    reg rst_n;
-    reg ena;
+  // Wire up the inputs and outputs:
+  reg clk;
+  reg rst_n;
+  reg ena;
+  reg [7:0] ui_in;
+  reg [7:0] uio_in;
+  wire [7:0] uo_out;
+  wire [7:0] uio_out;
+  wire [7:0] uio_oe;
+`ifdef GL_TEST
+  wire VPWR = 1'b1;
+  wire VGND = 1'b0;
+`endif
 
-    // Inputs to top
-    reg  [7:0] ui_in;
-    reg  [7:0] uio_in;
+  // Replace tt_um_example with your module name:
+  tt_um_axi4lite_top user_project (
 
-    // Outputs from top
-    wire [7:0] uio_oe;
-    wire [7:0] uio_out;
-    wire [7:0] uo_out;
+      // Include power ports for the Gate Level test:
+`ifdef GL_TEST
+      .VPWR(VPWR),
+      .VGND(VGND),
+`endif
 
-    // DUT
-    axi4lite_top #(
-        .ADDR_WIDTH(ADDR_WIDTH),
-        .DATA_WIDTH(DATA_WIDTH)
-    ) dut (
-        .clk    (clk),
-        .rst_n  (rst_n),
-        .ena    (ena),
-        .ui_in  (ui_in),
-        .uio_in (uio_in),
-        .uio_oe (uio_oe),
-        .uio_out(uio_out),
-        .uo_out (uo_out)
-    );
+      .ui_in  (ui_in),    // Dedicated inputs
+      .uo_out (uo_out),   // Dedicated outputs
+      .uio_in (uio_in),   // IOs: Input path
+      .uio_out(uio_out),  // IOs: Output path
+      .uio_oe (uio_oe),   // IOs: Enable path (active high: 0=input, 1=output)
+      .ena    (ena),      // enable - goes high when design is selected
+      .clk    (clk),      // clock
+      .rst_n  (rst_n)     // not reset
+  );
 
-    // Clock
-    initial begin
-        clk = 0;
-        forever #5 clk = ~clk;  // 100 MHz
-    end
-
-    // Test sequence
-    initial begin
-        rst_n  = 0;
-        ena    = 1;
-        ui_in  = 0;
-        uio_in = 0;
-
-        #20 rst_n = 1;
-
-        // ---------------- WRITE ----------------
-        #20;
-        ui_in[0]   = 1;        // start_write
-        ui_in[2:1] = 2'h2;     // write_addr
-        uio_in     = 8'h4;     // write data
-        #10 ui_in[0] = 0;      // deassert start_write
-        wait(uo_out[0] == 1);  // wait for done
-        $display("WRITE: Addr=0x%h Data=0x%h", ui_in[2:1], uio_in);
-
-        // ---------------- READ ----------------
-        #20;
-        ui_in[4]   = 1;        // start_read
-        ui_in[3:2] = 2'h2;     // read_addr
-        #10 ui_in[4] = 0;      // deassert start_read
-        wait(uo_out[0] == 1);  // wait for done
-        $display("READ:  Addr=0x%h Data=0x%h", ui_in[3:2], uio_out);
-
-        // ---------------- CHECK ----------------
-        if (uio_out == 8'h4)
-            $display("TEST PASSED ✅");
-        else
-            $display("TEST FAILED ❌ (Expected 0x04, Got 0x%h)", uio_out);
-
-        #100 $finish;
-    end
 endmodule
